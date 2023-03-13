@@ -17,6 +17,27 @@ void clean_array(char **names, int size)
     free(names);
 }
 
+int check_empty(DIR *dir, struct dirent *entry, char *path)
+{
+    if ((dir = opendir(path)) == NULL)
+    {
+        perror("");
+        return 1;
+    }
+    else
+    {
+        int size = 0;
+        while ((entry = readdir(dir)) != NULL)
+        {
+            size++;
+        }
+        if (size == 2)
+            return 0;
+        else
+            return 1;
+    }
+}
+
 void this_dir(DIR *dir, struct dirent *entry, char *path)
 {
     if ((dir = opendir(path)) == NULL)
@@ -140,6 +161,14 @@ void more_dir(int num, char **argv)
 
     for (int i = 0; i < countDir; i++)
     {
+        if (check_empty(dir, entry, directories[i]) == 0)
+        {
+            mx_printstr(directories[i]);
+            mx_printstr(":\t# empty directory\n");
+            if (i != countDir - 1)
+                mx_printchar('\n');
+            continue;
+        }
         mx_printstr(directories[i]);
         mx_printstr(":\n");
         this_dir(dir, entry, directories[i]);

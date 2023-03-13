@@ -1,16 +1,10 @@
-//
-//  main.c
-//  uls
-//
-//  Created by Artur Holiev on 13.03.2023.
-//
 #include "../libmx/inc/libmx.h"
 
 #include <stdio.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <malloc/malloc.h>
+
 #include <sys/types.h>
 #include <dirent.h>
 

@@ -34,7 +34,6 @@ void this_dir(DIR *dir, struct dirent *entry, char *path)
             size++;
         }
         closedir(dir);
-
         dir = opendir(path);
         char **files = (char **)malloc(size * sizeof(char *));
 
@@ -56,7 +55,6 @@ void this_dir(DIR *dir, struct dirent *entry, char *path)
             mx_printchar('\t');
         }
         mx_printchar('\n');
-
         clean_array(files, size);
     }
 
@@ -73,6 +71,7 @@ void more_dir(int num, char **argv)
     char **files = NULL;
     int countDir = 0;
     int countFiles = 0;
+    int temp = 0;
 
     for (int i = 1; i < num; i++)
     {
@@ -81,6 +80,7 @@ void more_dir(int num, char **argv)
         else
             countFiles++;
     }
+    temp = countFiles;
 
     directories = (char **)malloc(countDir * sizeof(char *));
     files = (char **)malloc(countFiles * sizeof(char *));
@@ -147,7 +147,7 @@ void more_dir(int num, char **argv)
             mx_printchar('\n');
     }
     clean_array(directories, countDir);
-    clean_array(files, countFiles);
+    clean_array(files, temp);
 }
 
 int main(int argc, char *argv[])

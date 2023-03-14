@@ -1,3 +1,12 @@
+/////////////////////////////////////////
+/////////////////////////////////////////
+/////////////////////////////////////////
+/////////created by Artur Holiev/////////
+////////create by Oleksandr Dzunyik//////
+/////////////////////////////////////////
+/////////////////////////////////////////
+/////////////////////////////////////////
+
 #include "../libmx/inc/libmx.h"
 
 #include <stdio.h>
@@ -184,6 +193,16 @@ void more_dir(int num, char **argv)
     clean_array(files, temp);
 }
 
+bool flag(char **argv)
+{
+    if (mx_strcmp("-l", argv[1]) == 0)
+    {
+        return true;
+    }
+    else
+        return false;
+}
+
 int main(int argc, char *argv[])
 {
     DIR *dir = NULL;
@@ -193,10 +212,21 @@ int main(int argc, char *argv[])
         this_dir(dir, entry, ".");
         exit(EXIT_SUCCESS);
     }
-    else
+    if (argc > 1)
     {
-        more_dir(argc, argv);
-        exit(EXIT_SUCCESS);
+        if (flag(argv))
+        {
+            ////////////////////////
+            // function for flag -l//
+            ////////////////////////
+            mx_printstr("with flag\n");
+            exit(EXIT_SUCCESS);
+        }
+        else
+        {
+            more_dir(argc, argv);
+            exit(EXIT_SUCCESS);
+        }
     }
     exit(EXIT_SUCCESS);
 }

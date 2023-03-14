@@ -195,7 +195,7 @@ void show_permission(struct stat filestat) {
     mx_printstr((filestat.st_mode & S_IXOTH) ? "x" : "-");
 }
 
-void count_total(DIR *dir, struct dirent *entry, char *path, char **argv) {
+void count_total(DIR *dir, struct dirent *entry, char *path) {
     if ((dir = opendir(path)) == NULL)
     {
         perror("");
@@ -243,52 +243,8 @@ void count_total(DIR *dir, struct dirent *entry, char *path, char **argv) {
     closedir(dir);
 }
 
-void show_info(char *files[], int size) {
 
-    for (int i = 0; i < size; i++)
-    {   
-        struct stat filestat;
-        stat(files[i], &filestat);
-        char *temp = ctime(&filestat.st_ctime);
-        if(temp[mx_strlen(temp) - 1] == '\n') {
-            temp[mx_strlen(temp) - 1] = '\0';
-        }
-        char **arr = mx_strsplit(temp, ' ');
-        struct passwd *pw = getpwuid(filestat.st_uid);
-        struct group *gr = getgrgid(filestat.st_gid);
-
-        show_permission(filestat);
-        mx_printchar(' ');
-        mx_printint(filestat.st_nlink);
-        mx_printchar(' ');
-        mx_printstr(pw->pw_name);
-        mx_printchar(' ');
-        mx_printstr(gr->gr_name);
-        mx_printchar(' ');
-        mx_printint(filestat.st_size);  
-        mx_printchar(' ');
-        mx_printstr(arr[1]);
-        mx_printchar(' ');
-        mx_printstr(arr[2]);
-        mx_printchar(' ');
-        int j = 0;
-        for(int i = 0; ; i++) {
-            if(arr[3][i] == ':') {
-                j++;
-            }
-            if(j == 2) {
-                break;
-            }
-            mx_printchar(arr[3][i]);
-        }
-        mx_printchar(' ');
-        mx_printstr(files[i]);
-        mx_printchar('\n');
-    }
-    
-}
-
-void l_flag_this_dir(DIR *dir, struct dirent *entry, char *path, char **argv) {
+void l_flag_this_dir(DIR *dir, struct dirent *entry, char *path) {
     if ((dir = opendir(path)) == NULL)
     {
         perror("");
@@ -320,7 +276,7 @@ void l_flag_this_dir(DIR *dir, struct dirent *entry, char *path, char **argv) {
         }
         mx_bubble_sort(files, size);
 
-        //count_total(dir, entry, ".", argv);
+        //count_total(dir, entry, path);
         
         for (int i = 0; i < size; i++)
         {   
@@ -438,49 +394,51 @@ void l_flag_more_dir(int num, char **argv)
     mx_bubble_sort(files, countFiles);
 
     int k = 0;
-    for (int i = 0; i < countFiles; i++)
-    {
-        if(mx_strcmp(files[i], "-l") != 0) {
-            struct stat filestat;
-            stat(files[i], &filestat);
-            char *temp = ctime(&filestat.st_ctime);
-            if(temp[mx_strlen(temp) - 1] == '\n') {
-                temp[mx_strlen(temp) - 1] = '\0';
-            }
-            char **arr = mx_strsplit(temp, ' ');
-            struct passwd *pw = getpwuid(filestat.st_uid);
-            struct group *gr = getgrgid(filestat.st_gid);
 
-            show_permission(filestat);
-            mx_printchar(' ');
-            mx_printint(filestat.st_nlink);
-            mx_printchar(' ');
-            mx_printstr(pw->pw_name);
-            mx_printchar(' ');
-            mx_printstr(gr->gr_name);
-            mx_printchar(' ');
-            mx_printint(filestat.st_size);  
-            mx_printchar(' ');
-            mx_printstr(arr[1]);
-            mx_printchar(' ');
-            mx_printstr(arr[2]);
-            mx_printchar(' ');
-            int j = 0;
-            for(int i = 0; ; i++) {
-                if(arr[3][i] == ':') {
-                    j++;
-                }
-                if(j == 2) {
-                    break;
-                }
-                mx_printchar(arr[3][i]);
-            }
-            mx_printchar(' ');
-            mx_printstr(files[i]);
-            mx_printchar('\n'); k = i;
+    
+    for (int i = 0; i < countFiles; i++)
+    {   
+        
+        //count_total(dir, entry, directories[i]);
+        
+        struct stat filestat;
+        stat(files[i], &filestat);
+        char *temp = ctime(&filestat.st_ctime);
+        if(temp[mx_strlen(temp) - 1] == '\n') {
+            temp[mx_strlen(temp) - 1] = '\0';
         }
-        
-        
+        char **arr = mx_strsplit(temp, ' ');
+        struct passwd *pw = getpwuid(filestat.st_uid);
+        struct group *gr = getgrgid(filestat.st_gid);
+
+        show_permission(filestat);
+        mx_printchar(' ');
+        mx_printint(filestat.st_nlink);
+        mx_printchar(' ');
+        mx_printstr(pw->pw_name);
+        mx_printchar(' ');
+        mx_printstr(gr->gr_name);
+        mx_printchar(' ');
+        mx_printint(filestat.st_size);  
+        mx_printchar(' ');
+        mx_printstr(arr[1]);
+        mx_printchar(' ');
+        mx_printstr(arr[2]);
+        mx_printchar(' ');
+        int j = 0;
+        for(int i = 0; ; i++) {
+            if(arr[3][i] == ':') {
+                j++;
+            }
+            if(j == 2) {
+                break;
+            }
+            mx_printchar(arr[3][i]);
+        }
+        mx_printchar(' ');
+        mx_printstr(files[i]);
+        mx_printchar('\n'); 
+             
     }
 
     if (countFiles > 0 && countDir == 0 && mx_strcmp(files[k], "-l") != 0)
@@ -501,8 +459,8 @@ void l_flag_more_dir(int num, char **argv)
         
         mx_printstr(directories[i]);
         mx_printstr(":\n");
-        l_flag_this_dir(dir, entry, directories[i], argv);
-    
+        l_flag_this_dir(dir, entry, directories[i]);
+
 
         if (i != countDir - 1)
             mx_printchar('\n');
@@ -517,10 +475,8 @@ int main(int argc, char *argv[])
     DIR *dir = NULL;
     struct dirent *entry = NULL;
 
-    int c;
-
     if(argc == 2 && mx_strcmp(argv[1], "-l") == 0) {
-        l_flag_this_dir(dir, entry, ".", argv);
+        l_flag_this_dir(dir, entry, ".");
     }
 
     else if(argc == 1)
@@ -530,20 +486,23 @@ int main(int argc, char *argv[])
     }
     else
     {   
-        bool checkFlag = false;
-        for(int i = 0; i < argc; i++) {
-            if(mx_strcmp(argv[i], "-l") == 0) {
-                checkFlag = true;
-                break;
-            }
-        }
-        if(checkFlag == true) {
+        // bool checkFlag = false;
+        // for(int i = 0; i < argc; i++) {
+        //     if(mx_strcmp(argv[i], "-l") == 0) {
+        //         checkFlag = true;
+        //         break;
+        //     }
+        // }
+        // if(checkFlag == true) {
             l_flag_more_dir(argc, argv);
-        }
-        else {
-            more_dir(argc, argv);
-        }
+        // }
+        // else {
+        //     more_dir(argc, argv);
+        // }
         exit(EXIT_SUCCESS);
     }
     exit(EXIT_SUCCESS);
 }
+
+
+

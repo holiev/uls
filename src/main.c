@@ -169,6 +169,11 @@ void more_dir(int num, char **argv)
                 mx_printchar('\n');
             continue;
         }
+        if (countDir == 1)
+        {
+            this_dir(dir, entry, directories[i]);
+            break;
+        }
         mx_printstr(directories[i]);
         mx_printstr(":\n");
         this_dir(dir, entry, directories[i]);

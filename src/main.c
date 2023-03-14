@@ -41,7 +41,7 @@ int check_empty(DIR *dir, struct dirent *entry, char *path)
     }
 }
 
-void this_dir(DIR *dir, struct dirent *entry, char *path, char **argv)
+void this_dir(DIR *dir, struct dirent *entry, char *path)
 {
     if ((dir = opendir(path)) == NULL)
     {
@@ -174,7 +174,7 @@ void more_dir(int num, char **argv)
         }
         mx_printstr(directories[i]);
         mx_printstr(":\n");
-        this_dir(dir, entry, directories[i], argv);
+        this_dir(dir, entry, directories[i]);
         if (i != countDir - 1)
             mx_printchar('\n');
     }
@@ -243,7 +243,52 @@ void count_total(DIR *dir, struct dirent *entry, char *path, char **argv) {
     closedir(dir);
 }
 
-void l_flag(DIR *dir, struct dirent *entry, char *path, char **argv) {
+void show_info(char *files[], int size) {
+
+    for (int i = 0; i < size; i++)
+    {   
+        struct stat filestat;
+        stat(files[i], &filestat);
+        char *temp = ctime(&filestat.st_ctime);
+        if(temp[mx_strlen(temp) - 1] == '\n') {
+            temp[mx_strlen(temp) - 1] = '\0';
+        }
+        char **arr = mx_strsplit(temp, ' ');
+        struct passwd *pw = getpwuid(filestat.st_uid);
+        struct group *gr = getgrgid(filestat.st_gid);
+
+        show_permission(filestat);
+        mx_printchar(' ');
+        mx_printint(filestat.st_nlink);
+        mx_printchar(' ');
+        mx_printstr(pw->pw_name);
+        mx_printchar(' ');
+        mx_printstr(gr->gr_name);
+        mx_printchar(' ');
+        mx_printint(filestat.st_size);  
+        mx_printchar(' ');
+        mx_printstr(arr[1]);
+        mx_printchar(' ');
+        mx_printstr(arr[2]);
+        mx_printchar(' ');
+        int j = 0;
+        for(int i = 0; ; i++) {
+            if(arr[3][i] == ':') {
+                j++;
+            }
+            if(j == 2) {
+                break;
+            }
+            mx_printchar(arr[3][i]);
+        }
+        mx_printchar(' ');
+        mx_printstr(files[i]);
+        mx_printchar('\n');
+    }
+    
+}
+
+void l_flag_this_dir(DIR *dir, struct dirent *entry, char *path, char **argv) {
     if ((dir = opendir(path)) == NULL)
     {
         perror("");
@@ -275,7 +320,8 @@ void l_flag(DIR *dir, struct dirent *entry, char *path, char **argv) {
         }
         mx_bubble_sort(files, size);
 
-        count_total(dir, entry, ".", argv);
+        //count_total(dir, entry, ".", argv);
+        
         for (int i = 0; i < size; i++)
         {   
             struct stat filestat;
@@ -315,14 +361,154 @@ void l_flag(DIR *dir, struct dirent *entry, char *path, char **argv) {
             mx_printchar(' ');
             mx_printstr(files[i]);
             mx_printchar('\n');
-            clean_array(arr, 4);
         }
-        //mx_printchar('\n');
+    
+        
         clean_array(files, size);
     }
 
     free(entry);
     closedir(dir);
+}
+
+void l_flag_more_dir(int num, char **argv)
+{
+    DIR *dir = NULL;
+    struct dirent *entry = NULL;
+    bool consist;
+    char **directories = NULL;
+    char **files = NULL;
+    int countDir = 0;
+    int countFiles = 0;
+    int temp = 0;
+
+    for (int i = 1; i < num; i++)
+    {
+        if (opendir(argv[i]) != NULL)
+            countDir++;
+        else
+            countFiles++;
+    }
+    temp = countFiles;
+
+    directories = (char **)malloc(countDir * sizeof(char *));
+    files = (char **)malloc(countFiles * sizeof(char *));
+
+    for (int i = 0; i < countDir; i++)
+        directories[i] = mx_strnew(25);
+    for (int i = 0; i < countFiles; i++)
+        files[i] = mx_strnew(25);
+
+    int a = 0;
+    int b = 0;
+    for (int i = 1; i < num; i++)
+    {
+        if (opendir(argv[i]) != NULL)
+        {
+            directories[a] = mx_strdup(argv[i]);
+            a++;
+        }
+        else
+        {
+            dir = opendir(".");
+            while ((entry = readdir(dir)) != NULL)
+            {
+                if (mx_strcmp(argv[i], entry->d_name) == 0)
+                {
+                    consist = true;
+                    break;
+                }
+                else
+                    consist = false;
+            }
+            closedir(dir);
+            if (!consist && mx_strcmp(argv[i], "-l") != 0)
+            {
+                mx_printstr("uls: ");
+                mx_printstr(argv[i]);
+                mx_printstr(": No such file or directory\n");
+                countFiles--;
+                continue;
+            }
+            files[b] = mx_strdup(argv[i]);
+            b++;
+        }
+    }
+    mx_bubble_sort(directories, countDir);
+    mx_bubble_sort(files, countFiles);
+
+    int k = 0;
+    for (int i = 0; i < countFiles; i++)
+    {
+        if(mx_strcmp(files[i], "-l") != 0) {
+            struct stat filestat;
+            stat(files[i], &filestat);
+            char *temp = ctime(&filestat.st_ctime);
+            if(temp[mx_strlen(temp) - 1] == '\n') {
+                temp[mx_strlen(temp) - 1] = '\0';
+            }
+            char **arr = mx_strsplit(temp, ' ');
+            struct passwd *pw = getpwuid(filestat.st_uid);
+            struct group *gr = getgrgid(filestat.st_gid);
+
+            show_permission(filestat);
+            mx_printchar(' ');
+            mx_printint(filestat.st_nlink);
+            mx_printchar(' ');
+            mx_printstr(pw->pw_name);
+            mx_printchar(' ');
+            mx_printstr(gr->gr_name);
+            mx_printchar(' ');
+            mx_printint(filestat.st_size);  
+            mx_printchar(' ');
+            mx_printstr(arr[1]);
+            mx_printchar(' ');
+            mx_printstr(arr[2]);
+            mx_printchar(' ');
+            int j = 0;
+            for(int i = 0; ; i++) {
+                if(arr[3][i] == ':') {
+                    j++;
+                }
+                if(j == 2) {
+                    break;
+                }
+                mx_printchar(arr[3][i]);
+            }
+            mx_printchar(' ');
+            mx_printstr(files[i]);
+            mx_printchar('\n'); k = i;
+        }
+        
+        
+    }
+
+    if (countFiles > 0 && countDir == 0 && mx_strcmp(files[k], "-l") != 0)
+        mx_printchar('\n');
+    else if (countFiles != 0 && countDir != 0 && mx_strcmp(files[k], "-l") != 0)
+        mx_printstr("\n\n");
+
+    for (int i = 0; i < countDir; i++)
+    {
+        if (check_empty(dir, entry, directories[i]) == 0)
+        {
+            mx_printstr(directories[i]);
+            mx_printstr(":\t# empty directory\n");
+            if (i != countDir - 1)
+                mx_printchar('\n');
+            continue;
+        }
+        
+        mx_printstr(directories[i]);
+        mx_printstr(":\n");
+        l_flag_this_dir(dir, entry, directories[i], argv);
+    
+
+        if (i != countDir - 1)
+            mx_printchar('\n');
+    }
+    clean_array(directories, countDir);
+    clean_array(files, temp);
 }
 
 
@@ -334,17 +520,29 @@ int main(int argc, char *argv[])
     int c;
 
     if(argc == 2 && mx_strcmp(argv[1], "-l") == 0) {
-        l_flag(dir, entry, ".", argv);
+        l_flag_this_dir(dir, entry, ".", argv);
     }
 
     else if(argc == 1)
     {
-        this_dir(dir, entry, ".", argv);
+        this_dir(dir, entry, ".");
         exit(EXIT_SUCCESS);
     }
     else
-    {
-        more_dir(argc, argv);
+    {   
+        bool checkFlag = false;
+        for(int i = 0; i < argc; i++) {
+            if(mx_strcmp(argv[i], "-l") == 0) {
+                checkFlag = true;
+                break;
+            }
+        }
+        if(checkFlag == true) {
+            l_flag_more_dir(argc, argv);
+        }
+        else {
+            more_dir(argc, argv);
+        }
         exit(EXIT_SUCCESS);
     }
     exit(EXIT_SUCCESS);

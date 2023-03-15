@@ -276,7 +276,7 @@ void l_flag_this_dir(DIR *dir, struct dirent *entry, char *path) {
         }
         mx_bubble_sort(files, size);
 
-        //count_total(dir, entry, path);
+        count_total(dir, entry, ".");
         
         for (int i = 0; i < size; i++)
         {   

@@ -170,7 +170,7 @@ void l_flag_more_dir(int num, char **argv)
                 mx_printchar('\n');
             continue;
         }
-        if (countDir == 1 && temp == 0)
+        if (countDir == 1 && countFiles == 0)
         {
             l_flag_this_dir(dir, entry, directories[i]);
             break;

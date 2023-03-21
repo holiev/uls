@@ -32,12 +32,26 @@ void this_dir(DIR *dir, struct dirent *entry, char *path)
             k++;
         }
         mx_bubble_sort(files, size);
-        for (int i = 0; i < size; i++)
+
+        if (isatty(STDOUT_FILENO))
         {
-            mx_printstr(files[i]);
-            mx_printchar('\t');
+            output_by_cols(files, size);
         }
-        mx_printchar('\n');
+        else
+        {
+            for (int i = 0; i < size; i++)
+            {
+                mx_printstr(files[i]);
+                if (i != size - 1)
+                    mx_printchar('\n');
+            }
+        }
+        // for (int i = 0; i < size; i++)
+        // {
+        //     mx_printstr(files[i]);
+        //     mx_printchar('\t');
+        // }
+        // mx_printchar('\n');
         clean_array(files, size);
     }
 
